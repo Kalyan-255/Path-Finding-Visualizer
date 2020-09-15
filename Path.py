@@ -2,9 +2,13 @@ import pygame as pg
 import sys
 import queue
 import heapq
+import time
 pg.init()
 sys.setrecursionlimit(10000000)
 font1=pg.font.SysFont('',15,True)
+font_small=pg.font.SysFont('',32,True)
+start=0
+result_time=0
 class button:
     def __init__(self,x,y,h,w,col,text):
         self.x=x
@@ -101,8 +105,24 @@ def draw_all():
         arr[sx][sy].t=3
     draw_rec()
     draw_lines()
+    text=font_small.render("INSTRUCTIONS:S-SOURCE , E-DESTINATION , LEFTCLICK-ADD OBSTACLE",0,(250,0,0))
+    text1=font_small.render("RIGHTCLICK-REMOVE OBSTACLE , R-RESTART , SPACE-FINDPATH",0,(0,250,0))
+    dis.blit(text,(0,height+15))
+    dis.blit(text1,(0,height+45))
+    global start
+    global result_time
+    if result_time==0 and start!=0:
+        text1 = font_small.render("TIME : "+str(round((time.time()-start), 3)), 0, (0, 0, 250))
+        dis.blit(text1,(width-150,height+45))
+    elif result_time!=0:
+        text2 = font_small.render("TIME : "+str(round(result_time, 3)), 0, (0, 0, 250))
+        dis.blit(text2,(width-150,height+45))
     pg.display.update()
 def draw_path():
+    global start
+    global result_time
+    result_time=time.time()-start
+    print(result_time)
     ix=arr[ex][ey].prx
     iy=arr[ex][ey].pry
     while ix!=sx or iy!=sy:
@@ -164,9 +184,13 @@ def neighbour_queue(i1,j1,i,j):
 def dist(x1,x2,y1,y2):
     return abs(x1-x2)+abs(y1-y2)
 def reset():
+    global start
+    global result_time
     sx,sy,ex,ey=-1,-1,-1,-1
     arr.clear()
     heap.clear()
+    start=0
+    result_time=0
     heap_greedy.clear()
     for i in range(width//w):
         arr.append([])
@@ -197,12 +221,13 @@ col.append(color_light_blue)
 col.append(color_green)
 col.append(color_red)
 col.append(color_purple)
-width=800
+width=1005
 height=600
-w=10
+w=15
 px=(0,-1,1,0)
 py=(-1,0,0,1)
 dis=pg.display.set_mode((width,height))
+height-=75
 pg.display.set_caption("Path Finder")
 q=queue.Queue()
 heap=[]
@@ -256,6 +281,7 @@ while run:
                     ex=pos[0]//w
                     ey=pos[1]//w
                 if event.key==pg.K_SPACE:
+                    start=time.time()
                     if algorithm==1:
                         path_find(sx,sy)
                     elif algorithm==2:
@@ -269,3 +295,5 @@ while run:
             draw_all()
         pg.display.update()
 pg.quit()
+
+        
